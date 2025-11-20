@@ -9,10 +9,14 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use("/registerUser", require("./routes/registerUser"));
+app.use("/refresh", require("./routes/refresh"));
 app.use("/login", require("./routes/login"));
+app.use("/logout", require("./routes/logout"));
 app.use("/invoice", require("./routes/invoice"));
-app.use("/invoices", require("./routes/getInvoice"));
+app.use("/logout", require("./routes/logout"));
+app.use("/getInvoiceById", require("./routes/getInvoiceById"));
 app.use("/editInvoiceStatus", require("./routes/editInvoiceStatus"));
+app.use("/sendEmail", require("./routes/sendEmailRoute"));
 
 main().catch((err) => console.log(err));
 async function main() {

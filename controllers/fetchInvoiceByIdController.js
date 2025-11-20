@@ -1,25 +1,24 @@
 const Invoice = require("../model/Invoice");
-const User = require("../model/User");
+const Item = require("../model/Item");
 
 const fetchInvoiceById = async (req, res) => {
-  const userEmail = req.email;
-  const user = await User.findOne({ email: userEmail });
-  const invoice = await Invoice.findOne({ userId: user._id });
-  // const listOfInvoicesOfUser = invoice.listOfInvoices;
-  const listOfInvoicesOfUser = invoice.listOfInvoices
-    .filter((doc) => doc) // Remove null/undefined entries
-    .map((doc) => doc.toObject());
-
-  const particularInvoice = listOfInvoicesOfUser.find(
-    (inv) => inv._id.toString() === req.params.id
-  );
-
-  res.status(201).json({
-    status: "201",
-    statusText: "Invoice fetched",
-    data: particularInvoice,
-    error: null,
-  });
+  const invoiceId = req.params.id;
+  try {
+    const foundInvoice = await Invoice.findOne({ _id: invoiceId }).lean();
+    const foundItems = await Item.find({ invoiceId: foundInvoice._id }).lean();
+    const invoiceToBeSent = { ...foundInvoice, itemsList: foundItems };
+    res.status(201).json({
+      status: "201",
+      message: "Invoice fetched successfully",
+      data: invoiceToBeSent,
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      message: "An error occurred",
+      error: error.message,
+    });
+  }
 };
 
 module.exports = { fetchInvoiceById };

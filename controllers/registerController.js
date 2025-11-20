@@ -1,5 +1,5 @@
 const User = require("../model/User");
-const InvoiceList = require("../model/Invoice");
+const bcrypt = require("bcryptjs");
 
 const registerUser = async (req, res) => {
   const { email, password } = req.body;
@@ -11,18 +11,21 @@ const registerUser = async (req, res) => {
   }
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    return res
-      .sendStatus(409)
-      .json({ message: "A user with this email already exists" });
+    return res.sendStatus(409).json({
+      status: "fail",
+      message: "A user with this email already exists",
+    });
   }
-  const newUser = await User.create({ email, password });
-  const invoiceListOfNewUser = await InvoiceList.create({
-    userId: newUser._id,
-    listOfInvoices: [],
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newUser = await User.create({ email, password: hashedPassword });
+
+  res.status(201).json({
+    status: "success",
+    message: "User created successfully",
+    data: {
+      user: newUser,
+    },
   });
-  res
-    .status(201)
-    .json({ message: "User created successfully", invoiceListOfNewUser });
 };
 
 module.exports = { registerUser };
