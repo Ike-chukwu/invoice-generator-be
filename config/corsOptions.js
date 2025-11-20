@@ -1,4 +1,4 @@
-const whiteList = ["http://localhost:3000","https://invoice-fe-vlyg.vercel.app","https://invoice-fe-phi.vercel.app/"];
+const whiteList = ["http://localhost:3000","https://invoice-fe-vlyg.vercel.app","https://invoice-fe-phi.vercel.app"];
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -12,5 +12,6 @@ const corsOptions = {
 };
 
 module.exports = corsOptions;
+
 
 
