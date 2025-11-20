@@ -77,10 +77,14 @@ async function sendInvoiceEmail(invoiceData, clientEmail, businessEmail) {
     const pdfBuffer = await generateInvoicePDF(invoiceData);
 
     const mailOptions = {
-      from: businessEmail,
+      from: process.env.EMAIL_USER, // MUST match the authenticated Gmail account
       to: clientEmail,
       subject: `Invoice ${invoiceData.code} - ${invoiceData.projectDescription}`,
-      html: `Your invoice is attached.`,
+      html: `
+    <p>Dear ${invoiceData.clientName},</p>
+    <p>Your invoice is attached.</p>
+    <p>Sent on behalf of: ${businessEmail}</p> <!-- display the business/account owner -->
+  `,
       attachments: [
         {
           filename: `Invoice-${invoiceData.code}.pdf`,
@@ -97,6 +101,7 @@ async function sendInvoiceEmail(invoiceData, clientEmail, businessEmail) {
       messageId: info.messageId,
     };
   } catch (error) {
+    console.error("Error sending email:", error);
     throw new Error("Failed to send email");
   }
 }
