@@ -9,100 +9,71 @@ const path = require("path");
 let browserInstance = null;
 
 async function getBrowser() {
-  console.log("getBrowser called, isLocal:", isLocal);
-
-  if (browserInstance) {
-    console.log("Reusing existing browser instance");
-    return browserInstance;
-  }
+  if (browserInstance) return browserInstance;
 
   if (isLocal) {
-    console.log("Launching browser in LOCAL mode");
     browserInstance = await puppeteer.launch({
       headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
   } else {
-    console.log("Launching browser in PRODUCTION mode");
-    console.log("Chromium args:", chromium.args);
-
-    try {
-      const executablePath = await chromium.executablePath();
-      console.log("Chromium executable path:", executablePath);
-
-      browserInstance = await puppeteer.launch({
-        args: [
-          ...chromium.args,
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--disable-gpu",
-        ],
-        defaultViewport: chromium.defaultViewport,
-        executablePath: executablePath,
-        headless: chromium.headless,
-      });
-      console.log("Browser launched successfully");
-    } catch (error) {
-      console.error("Error launching browser:", error);
-      throw error;
-    }
+    browserInstance = await puppeteer.launch({
+      args: [
+        ...chromium.args,
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu'
+      ],
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+    });
   }
 
   return browserInstance;
 }
 
+// Updated transporter with better timeout settings
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD,
   },
+  tls: {
+    rejectUnauthorized: false
+  },
+  connectionTimeout: 60000, // 60 seconds
+  greetingTimeout: 30000,   // 30 seconds
+  socketTimeout: 60000,      // 60 seconds
+  logger: true,              // Enable logging
+  debug: true                // Show debug info
 });
 
 async function generateInvoicePDF(invoiceData) {
   try {
     console.log("=== generateInvoicePDF started ===");
-    console.log("NODE_ENV:", process.env.NODE_ENV);
-    console.log("isLocal:", isLocal);
-
+    
     const templatePath = path.join(
       __dirname,
       "../templates/invoice-template.hbs"
     );
-    console.log("Template path:", templatePath);
 
-    console.log("Reading template file...");
     const templateSource = await fs.readFile(templatePath, "utf8");
-    console.log(
-      "Template file read successfully, length:",
-      templateSource.length
-    );
-
-    console.log("Compiling handlebars template...");
     const template = handlebars.compile(templateSource);
-    console.log("Template compiled successfully");
-
-    console.log("Generating HTML from template...");
     const html = template(invoiceData);
-    console.log("HTML generated, length:", html.length);
 
-    console.log("Getting browser instance...");
     const browser = await getBrowser();
-    console.log("Browser instance obtained");
-
-    console.log("Creating new page...");
     const page = await browser.newPage();
-    console.log("New page created");
 
-    console.log("Setting page content...");
-    await page.setContent(html, {
+    await page.setContent(html, { 
       waitUntil: "networkidle0",
-      timeout: 30000,
+      timeout: 30000 
     });
-    console.log("Page content set successfully");
 
-    console.log("Generating PDF...");
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
@@ -113,18 +84,13 @@ async function generateInvoicePDF(invoiceData) {
         left: "20px",
       },
     });
-    console.log("PDF generated successfully, size:", pdfBuffer.length, "bytes");
 
-    console.log("Closing page...");
     await page.close();
-    console.log("Page closed");
-
+    console.log("PDF generated successfully");
     return pdfBuffer;
   } catch (error) {
     console.error("=== ERROR in generateInvoicePDF ===");
-    console.error("Error message:", error.message);
-    console.error("Error stack:", error.stack);
-    console.error("Error name:", error.name);
+    console.error("Error:", error.message);
     throw error;
   }
 }
@@ -132,15 +98,15 @@ async function generateInvoicePDF(invoiceData) {
 async function sendInvoiceEmail(invoiceData, clientEmail, businessEmail) {
   try {
     console.log("=== sendInvoiceEmail started ===");
-    console.log("Client email:", clientEmail);
-    console.log("Business email:", businessEmail);
-    console.log("Invoice code:", invoiceData.code);
-
     console.log("Generating PDF...");
+    
     const pdfBuffer = await generateInvoicePDF(invoiceData);
-    console.log("PDF generated successfully");
+    console.log("PDF generated, size:", pdfBuffer.length, "bytes");
 
-    console.log("Preparing email...");
+    console.log("Verifying SMTP connection...");
+    await transporter.verify();
+    console.log("SMTP connection verified successfully");
+
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: clientEmail,
@@ -159,7 +125,7 @@ async function sendInvoiceEmail(invoiceData, clientEmail, businessEmail) {
       ],
     };
 
-    console.log("Sending email via nodemailer...");
+    console.log("Sending email to:", clientEmail);
     const info = await transporter.sendMail(mailOptions);
     console.log("Email sent successfully, messageId:", info.messageId);
 
@@ -170,7 +136,8 @@ async function sendInvoiceEmail(invoiceData, clientEmail, businessEmail) {
   } catch (error) {
     console.error("=== ERROR in sendInvoiceEmail ===");
     console.error("Error message:", error.message);
-    console.error("Error stack:", error.stack);
+    console.error("Error code:", error.code);
+    console.error("Error response:", error.response);
     throw error;
   }
 }
