@@ -27,7 +27,6 @@ const createInvoiceController = async (req, res) => {
     res.status(400).json({
       status: "400",
       message: "An error occurred while creating invoice",
-      error: error.message,
     });
   }
 };

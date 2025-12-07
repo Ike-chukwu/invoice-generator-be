@@ -11,6 +11,17 @@ const fetchInvoicesController = async (req, res) => {
     excludedFields.forEach((el) => delete queryObj[el]);
     let foundInvoices = [];
     let numberOfInvoices = 0;
+    await Invoice.updateMany(
+      {
+        userId: foundUser._id.toString(),
+        status: "pending",
+        dueDate: { $lt: new Date().toISOString() },
+      },
+      {
+        $set: { status: "unpaid" },
+      }
+    );
+
     if (queryObj.status === "all") {
       foundInvoices = Invoice.find({
         userId: foundUser._id.toString(),
@@ -53,8 +64,6 @@ const fetchInvoicesController = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(error);
-
     res.status(400).json({
       status: "fail",
       message: "Invoices could not be fetched",

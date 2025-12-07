@@ -61,15 +61,14 @@ const editInvoiceController = async (req, res) => {
     }
 
     res.status(201).json({
-      status: "201",
+      status: "success",
       message: "Invoice successfully edited",
       data: { ...invoiceToBeEdited.toObject(), itemsList: updatedItemList },
     });
   } catch (error) {
     res.status(400).json({
-      status: "400",
+      status: "fail",
       message: "An error occurred while updating the invoice",
-      error: error.message,
     });
   }
 };

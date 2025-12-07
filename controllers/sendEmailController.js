@@ -1,78 +1,35 @@
-const isLocal = process.env.NODE_ENV !== "production";
-const chromium = require("@sparticuz/chromium");
-const puppeteer = isLocal ? require("puppeteer") : require("puppeteer-core");
+const puppeteer = require("puppeteer");
 const nodemailer = require("nodemailer");
 const handlebars = require("handlebars");
 const fs = require("fs").promises;
 const path = require("path");
 
-let browserInstance = null;
-
-async function getBrowser() {
-  if (browserInstance) return browserInstance;
-
-  if (isLocal) {
-    browserInstance = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-  } else {
-    browserInstance = await puppeteer.launch({
-      args: [
-        ...chromium.args,
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu'
-      ],
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
-    });
-  }
-
-  return browserInstance;
-}
-
-// Updated transporter with better timeout settings
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD,
   },
-  tls: {
-    rejectUnauthorized: false
-  },
-  connectionTimeout: 60000, // 60 seconds
-  greetingTimeout: 30000,   // 30 seconds
-  socketTimeout: 60000,      // 60 seconds
-  logger: true,              // Enable logging
-  debug: true                // Show debug info
 });
 
 async function generateInvoicePDF(invoiceData) {
   try {
-    console.log("=== generateInvoicePDF started ===");
-    
     const templatePath = path.join(
       __dirname,
       "../templates/invoice-template.hbs"
     );
-
     const templateSource = await fs.readFile(templatePath, "utf8");
+
     const template = handlebars.compile(templateSource);
     const html = template(invoiceData);
 
-    const browser = await getBrowser();
-    const page = await browser.newPage();
-
-    await page.setContent(html, { 
-      waitUntil: "networkidle0",
-      timeout: 30000 
+    const browser = await puppeteer.launch({
+      headless: "new",
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
+
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle0" });
 
     const pdfBuffer = await page.pdf({
       format: "A4",
@@ -85,36 +42,70 @@ async function generateInvoicePDF(invoiceData) {
       },
     });
 
-    await page.close();
-    console.log("PDF generated successfully");
+    await browser.close();
+
     return pdfBuffer;
   } catch (error) {
-    console.error("=== ERROR in generateInvoicePDF ===");
-    console.error("Error:", error.message);
-    throw error;
+    console.error("Error generating PDF:", error);
+    throw new Error("Failed to generate PDF");
   }
 }
 
 async function sendInvoiceEmail(invoiceData, clientEmail, businessEmail) {
   try {
-    console.log("=== sendInvoiceEmail started ===");
-    console.log("Generating PDF...");
-    
+    // Generate the PDF
     const pdfBuffer = await generateInvoicePDF(invoiceData);
-    console.log("PDF generated, size:", pdfBuffer.length, "bytes");
 
-    console.log("Verifying SMTP connection...");
-    await transporter.verify();
-    console.log("SMTP connection verified successfully");
-
+    // Email options
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: businessEmail,
       to: clientEmail,
       subject: `Invoice ${invoiceData.code} - ${invoiceData.projectDescription}`,
       html: `
-        <p>Dear ${invoiceData.clientName},</p>
-        <p>Your invoice is attached.</p>
-        <p>Sent on behalf of: ${businessEmail}</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #373B53; margin-bottom: 20px;">New Invoice from ${businessEmail}</h2>
+          
+          <p style="font-size: 16px; color: #333; margin-bottom: 10px;">Dear ${invoiceData.clientName},</p>
+          
+          <p style="font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 20px;">
+            Please find attached invoice <strong>${invoiceData.code}</strong> for <strong>${invoiceData.projectDescription}</strong>.
+          </p>
+          
+          <div style="background-color: #F9FAFE; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #373B53;">
+            <p style="margin: 8px 0; font-size: 14px; color: #555;">
+              <strong style="color: #0C0E16;">Invoice Code:</strong> ${invoiceData.code}
+            </p>
+            <p style="margin: 8px 0; font-size: 14px; color: #555;">
+              <strong style="color: #0C0E16;">Invoice Date:</strong> ${invoiceData.invoiceDate}
+            </p>
+            <p style="margin: 8px 0; font-size: 14px; color: #555;">
+              <strong style="color: #0C0E16;">Payment Due:</strong> ${invoiceData.paymentDueDate}
+            </p>
+            <p style="margin: 8px 0; font-size: 18px; color: #373B53;">
+              <strong style="color: #0C0E16;">Amount Due:</strong> <strong>${invoiceData.grandTotal}.00</strong>
+            </p>
+          </div>
+          
+          <p style="font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 10px;">
+            If you have any questions regarding this invoice, please don't hesitate to contact us.
+          </p>
+          
+          <p style="font-size: 14px; color: #555; margin-top: 30px;">
+            Thank you for your business!
+          </p>
+          
+          <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
+            <p style="color: #888EAF; font-size: 12px; margin: 3px 0;">
+              ${invoiceData.streetAddressOfBusinessOwner}, ${invoiceData.cityOfBusinessOwner}
+            </p>
+            <p style="color: #888EAF; font-size: 12px; margin: 3px 0;">
+              ${invoiceData.postCodeOfBusinessOwner}, ${invoiceData.countryOfBusinessOwner}
+            </p>
+            <p style="color: #888EAF; font-size: 12px; margin: 3px 0;">
+              ${businessEmail}
+            </p>
+          </div>
+        </div>
       `,
       attachments: [
         {
@@ -125,20 +116,17 @@ async function sendInvoiceEmail(invoiceData, clientEmail, businessEmail) {
       ],
     };
 
-    console.log("Sending email to:", clientEmail);
+    // Send email
     const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent successfully, messageId:", info.messageId);
+    // console.log('Email sent:', info.messageId);
 
     return {
       success: true,
       messageId: info.messageId,
     };
   } catch (error) {
-    console.error("=== ERROR in sendInvoiceEmail ===");
-    console.error("Error message:", error.message);
-    console.error("Error code:", error.code);
-    console.error("Error response:", error.response);
-    throw error;
+    // console.error('Error sending email:', error);
+    throw new Error("Failed to send email");
   }
 }
 
@@ -146,3 +134,7 @@ module.exports = {
   generateInvoicePDF,
   sendInvoiceEmail,
 };
+
+//whats here is behind the github
+//the gihub has setup with smtp while this is the inital setup
+//comment out the send via email for now then checkout the functionality of it in fe

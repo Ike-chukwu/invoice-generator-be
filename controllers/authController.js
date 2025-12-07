@@ -39,7 +39,6 @@ const authController = async (req, res) => {
         accessToken,
         refreshToken,
         email: foundUser.email,
-        // userId: foundUser._id,
       },
     });
   }

@@ -17,6 +17,7 @@ app.use("/logout", require("./routes/logout"));
 app.use("/getInvoiceById", require("./routes/getInvoiceById"));
 app.use("/editInvoiceStatus", require("./routes/editInvoiceStatus"));
 app.use("/sendEmail", require("./routes/sendEmailRoute"));
+app.use("/duplicateInvoice", require("./routes/duplicateInvoice"));
 
 main().catch((err) => console.log(err));
 async function main() {

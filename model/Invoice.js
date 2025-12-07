@@ -15,9 +15,10 @@ const invoiceSchema = new mongoose.Schema({
   countryOfClient: String,
   dueDate: String,
   invoiceDate: String,
-  paymentTerms: String,
+  // paymentTerms: String,
   projectDescription: String,
   status: String,
+  currency: String,
 });
 
 const Invoice = mongoose.model("Invoice", invoiceSchema);
