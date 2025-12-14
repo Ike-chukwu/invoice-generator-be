@@ -118,3 +118,4 @@ router.route("/").post(verifyJwt, async (req, res) => {
 });
 
 module.exports = router;
+

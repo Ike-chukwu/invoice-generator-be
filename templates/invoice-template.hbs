@@ -2,267 +2,116 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Arial', sans-serif;
-            color: #0C0E16;
-            background: #fff;
-        }
-        
-        .invoice-container {
-            background: white;
-            border-radius: 8px;
-            padding: 24px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
-        }
-        
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            width: 100%;
-        }
-        
-        .header-left {
-            flex: 1;
-        }
-        
-        .invoice-code {
-            text-transform: uppercase;
-            font-size: 16px;
-            margin-bottom: 8px;
-            color: #0C0E16;
-            font-weight: bold;
-        }
-        
-        .project-description {
-            font-size: 14px;
-            text-transform: capitalize;
-            color: #888EAF;
-        }
-        
-        .header-right {
-            text-align: right;
-        }
-        
-        .address-line {
-            font-size: 14px;
-            margin-bottom: 4px;
-            text-transform: capitalize;
-            color: #888EAF;
-        }
-        
-        .middle-section {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            gap: 40px;
-        }
-        
-        .dates-section {
-            display: flex;
-            flex-direction: column;
-            gap: 36px;
-        }
-        
-        .date-block {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .label {
-            font-size: 14px;
-            margin-bottom: 8px;
-            text-transform: capitalize;
-            color: #888EAF;
-        }
-        
-        .date-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: #0C0E16;
-        }
-        
-        .bill-to-section {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .client-name {
-            font-size: 18px;
-            font-weight: bold;
-            color: #0C0E16;
-        }
-        
-        .client-address {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .sent-to-section {
-            margin-left: auto;
-        }
-        
-        .client-email {
-            font-size: 18px;
-            font-weight: bold;
-            color: #0C0E16;
-        }
-        
-        .items-container {
-            width: 100%;
-        }
-        
-        .items-table {
-            width: 100%;
-            background: #F9FAFE;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-            padding: 40px 32px;
-        }
-        
-        .table-header {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 32px;
-        }
-        
-        .table-header-cell {
-            font-size: 13px;
-            color: #888EAF;
-        }
-        
-        .text-center {
-            text-align: center;
-        }
-        
-        .text-right {
-            text-align: right;
-        }
-        
-        .table-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 24px;
-        }
-        
-        .table-cell {
-            font-size: 14px;
-            font-weight: bold;
-            color: #0C0E16;
-        }
-        
-        .total-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            padding: 24px 32px;
-            background: #373B53;
-            color: white;
-            border-bottom-left-radius: 8px;
-            border-bottom-right-radius: 8px;
-        }
-        
-        .total-label {
-            font-size: 14px;
-        }
-        
-        .total-amount {
-            font-size: 24px;
-            font-weight: bold;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body>
-    <div class="invoice-container">
-        <!-- Header Section -->
-        <div class="header">
-            <div class="header-left">
-                <p class="invoice-code">{{code}}</p>
-                <span class="project-description">{{projectDescription}}</span>
-            </div>
-            <div class="header-right">
-                <p class="address-line">{{streetAddressOfBusinessOwner}},</p>
-                <p class="address-line">{{cityOfBusinessOwner}},</p>
-                <p class="address-line">{{postCodeOfBusinessOwner}}</p>
-                <p class="address-line">{{countryOfBusinessOwner}}</p>
-            </div>
-        </div>
-        
-        <!-- Middle Section -->
-        <div class="middle-section">
-            <!-- Dates -->
-            <div class="dates-section">
-                <div class="date-block">
-                    <p class="label">Invoice Date</p>
-                    <p class="date-value">{{invoiceDate}}</p>
-                </div>
-                <div class="date-block">
-                    <p class="label">Payment Due</p>
-                    <p class="date-value">{{paymentDueDate}}</p>
-                </div>
-            </div>
-            
-            <!-- Bill To -->
-            <div class="bill-to-section">
-                <div>
-                    <p class="label">bill to</p>
-                    <p class="client-name">{{clientName}}</p>
-                </div>
-                <div class="client-address">
-                    <p class="address-line">{{streetAddressOfClient}}</p>
-                    <p class="address-line">{{cityOfClient}}</p>
-                    <p class="address-line">{{postCodeOfClient}}</p>
-                    <p class="address-line">{{countryOfClient}}</p>
-                </div>
-            </div>
-            
-            <!-- Sent To -->
-            <div class="sent-to-section">
-                <p class="label">sent to</p>
-                <p class="client-email">{{clientEmail}}</p>
-            </div>
-        </div>
-        
-        <!-- Items Table -->
-        <div class="items-container">
-            <div class="items-table">
-                <div class="table-header">
-                    <p class="table-header-cell">Item Name</p>
-                    <p class="table-header-cell text-center">QTY.</p>
-                    <p class="table-header-cell text-center">Price</p>
-                    <p class="table-header-cell text-right">Total</p>
-                </div>
-                
-                {{#each itemsList}}
-                <div class="table-row">
-                    <p class="table-cell">{{this.itemName}}</p>
-                    <p class="table-cell text-center">{{this.itemQuantity}}</p>
-                    <p class="table-cell text-center">${{this.itemPrice}}.00</p>
-                    <p class="table-cell text-right">${{this.itemTotal}}.00</p>
-                </div>
-                {{/each}}
-            </div>
-            
-            <!-- Total Section -->
-            <div class="total-section">
-                <p class="total-label">Amount Due</p>
-                <p class="total-amount">${{grandTotal}}.00</p>
-            </div>
-        </div>
-    </div>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f4f4f4;">
+        <tr>
+            <td style="padding: 40px 20px;">
+                <!-- Main Container -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 800px; margin: 0 auto; background-color: #ffffff; border-radius: 8px;">
+                    
+                    <!-- Header Section -->
+                    <tr>
+                        <td style="padding: 24px 24px 40px 24px;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                <tr>
+                                    <td width="50%" style="vertical-align: top;">
+                                        <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold; color: #0C0E16; text-transform: uppercase;">{{code}}</p>
+                                        <p style="margin: 0; font-size: 14px; color: #888EAF; text-transform: capitalize;">{{projectDescription}}</p>
+                                    </td>
+                                    <td width="50%" style="vertical-align: top; text-align: right;">
+                                        <p style="margin: 0 0 4px 0; font-size: 14px; color: #888EAF; text-transform: capitalize;">{{streetAddressOfBusinessOwner}},</p>
+                                        <p style="margin: 0 0 4px 0; font-size: 14px; color: #888EAF; text-transform: capitalize;">{{cityOfBusinessOwner}},</p>
+                                        <p style="margin: 0 0 4px 0; font-size: 14px; color: #888EAF; text-transform: capitalize;">{{postCodeOfBusinessOwner}}</p>
+                                        <p style="margin: 0; font-size: 14px; color: #888EAF; text-transform: capitalize;">{{countryOfBusinessOwner}}</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Middle Section -->
+                    <tr>
+                        <td style="padding: 0 24px 40px 24px;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                <tr>
+                                    <td width="33%" style="vertical-align: top;">
+                                        <!-- Invoice Date -->
+                                        <p style="margin: 0 0 8px 0; font-size: 14px; color: #888EAF; text-transform: capitalize;">Invoice Date</p>
+                                        <p style="margin: 0 0 36px 0; font-size: 18px; font-weight: bold; color: #0C0E16;">{{invoiceDate}}</p>
+                                        
+                                        <!-- Payment Due -->
+                                        <p style="margin: 0 0 8px 0; font-size: 14px; color: #888EAF; text-transform: capitalize;">Payment Due</p>
+                                        <p style="margin: 0; font-size: 18px; font-weight: bold; color: #0C0E16;">{{paymentDueDate}}</p>
+                                    </td>
+                                    <td width="33%" style="vertical-align: top; padding-left: 20px;">
+                                        <!-- Bill To -->
+                                        <p style="margin: 0 0 8px 0; font-size: 14px; color: #888EAF; text-transform: capitalize;">Bill To</p>
+                                        <p style="margin: 0 0 12px 0; font-size: 18px; font-weight: bold; color: #0C0E16;">{{clientName}}</p>
+                                        <p style="margin: 0 0 4px 0; font-size: 14px; color: #888EAF; text-transform: capitalize;">{{streetAddressOfClient}}</p>
+                                        <p style="margin: 0 0 4px 0; font-size: 14px; color: #888EAF; text-transform: capitalize;">{{cityOfClient}}</p>
+                                        <p style="margin: 0 0 4px 0; font-size: 14px; color: #888EAF; text-transform: capitalize;">{{postCodeOfClient}}</p>
+                                        <p style="margin: 0; font-size: 14px; color: #888EAF; text-transform: capitalize;">{{countryOfClient}}</p>
+                                    </td>
+                                    <td width="33%" style="vertical-align: top; text-align: right; padding-left: 20px;">
+                                        <!-- Sent To -->
+                                        <p style="margin: 0 0 8px 0; font-size: 14px; color: #888EAF; text-transform: capitalize;">Sent To</p>
+                                        <p style="margin: 0; font-size: 18px; font-weight: bold; color: #0C0E16;">{{clientEmail}}</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Items Table -->
+                    <tr>
+                        <td style="padding: 0 24px 24px 24px;">
+                            <!-- Table Header -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #F9FAFE; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                                <tr>
+                                    <td style="padding: 40px 32px 32px 32px;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                            <tr>
+                                                <td width="40%" style="font-size: 13px; color: #888EAF; padding-bottom: 16px;">Item Name</td>
+                                                <td width="20%" style="font-size: 13px; color: #888EAF; text-align: center; padding-bottom: 16px;">QTY.</td>
+                                                <td width="20%" style="font-size: 13px; color: #888EAF; text-align: center; padding-bottom: 16px;">Price</td>
+                                                <td width="20%" style="font-size: 13px; color: #888EAF; text-align: right; padding-bottom: 16px;">Total</td>
+                                            </tr>
+                                            
+                                            <!-- Items Rows -->
+                                            {{#each itemsList}}
+                                            <tr>
+                                                <td style="font-size: 14px; font-weight: bold; color: #0C0E16; padding-bottom: 24px;">{{this.itemName}}</td>
+                                                <td style="font-size: 14px; font-weight: bold; color: #0C0E16; text-align: center; padding-bottom: 24px;">{{this.itemQuantity}}</td>
+                                                <td style="font-size: 14px; font-weight: bold; color: #0C0E16; text-align: center; padding-bottom: 24px;">${{this.itemPrice}}.00</td>
+                                                <td style="font-size: 14px; font-weight: bold; color: #0C0E16; text-align: right; padding-bottom: 24px;">${{this.itemTotal}}.00</td>
+                                            </tr>
+                                            {{/each}}
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Total Section -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #373B53; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                                <tr>
+                                    <td style="padding: 24px 32px;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                            <tr>
+                                                <td width="50%" style="font-size: 14px; color: #ffffff;">Amount Due</td>
+                                                <td width="50%" style="font-size: 24px; font-weight: bold; color: #ffffff; text-align: right;">${{grandTotal}}.00</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
