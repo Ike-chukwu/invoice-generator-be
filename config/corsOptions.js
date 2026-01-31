@@ -6,6 +6,7 @@ const whiteList = [
 
 const corsOptions = {
   origin: (origin, callback) => {
+    console.log("CORS origin:", origin);
     if (!origin || whiteList.includes(origin)) {
       callback(null, true);
     } else {
@@ -19,3 +20,4 @@ const corsOptions = {
 };
 
 module.exports = corsOptions;
+
